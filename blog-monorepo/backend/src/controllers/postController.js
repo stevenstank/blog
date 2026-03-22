@@ -93,11 +93,15 @@ const deletePost = async (req, res) => {
   try {
     const existingPost = await prisma.post.findUnique({
       where: { id: req.postId },
-      select: { id: true },
+      select: { id: true, published: true },
     });
 
     if (!existingPost) {
       return res.status(404).json({ message: 'Post not found' });
+    }
+
+    if (existingPost.published) {
+      return res.status(400).json({ message: 'Cannot delete published post' });
     }
 
     await prisma.comment.deleteMany({
