@@ -3,19 +3,18 @@ const cors = require('cors');
 const routes = require('./routes');
 const notFound = require('./middleware/notFound');
 const errorHandler = require('./middleware/errorHandler');
-const { CORS_ORIGINS } = require('./config/env');
 
 const app = express();
 
 app.use(
 	cors({
-		origin: (origin, callback) => {
-			if (!origin || CORS_ORIGINS.includes(origin)) {
-				return callback(null, true);
-			}
-
-			return callback(new Error('Not allowed by CORS'));
-		},
+		origin: [
+			'https://blog-seven-mu-89.vercel.app',
+			'https://blog-k9uh.vercel.app',
+			'http://localhost:5173',
+			'http://localhost:5174',
+		],
+		credentials: true,
 	})
 );
 app.use(express.json());
