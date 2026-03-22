@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-
-const API_BASE_URL = 'http://localhost:5000';
+import { useNavigate, useParams } from 'react-router-dom';
+import { getPostById, updatePost } from '../api';
 
 function EditPost() {
+  const navigate = useNavigate();
   const { id } = useParams();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -14,13 +14,7 @@ function EditPost() {
     const fetchPost = async () => {
       try {
         setLoading(true);
-        const response = await fetch(API_BASE_URL + '/posts/' + id);
-
-        if (!response.ok) {
-          throw new Error('Failed to load post');
-        }
-
-        const data = await response.json();
+        const data = await getPostById(id);
         setTitle(data.post?.title || '');
         setContent(data.post?.content || '');
       } catch (err) {
@@ -38,21 +32,8 @@ function EditPost() {
 
     try {
       setMessage('');
-      const token = localStorage.getItem('token');
-      const response = await fetch(API_BASE_URL + '/posts/' + id, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + token,
-        },
-        body: JSON.stringify({ title, content }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update post');
-      }
-
-      setMessage('Post updated successfully.');
+      await updatePost(id, { title, content });
+      navigate('/dashboard');
     } catch (err) {
       setMessage('Could not update post.');
     }

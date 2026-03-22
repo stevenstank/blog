@@ -73,6 +73,13 @@ const deletePost = (id) =>
     method: 'DELETE',
   });
 
+const getCommentsByPostId = (postId) => request(`/posts/${postId}/comments`);
+
+const deleteCommentById = (commentId) =>
+  request(`/comments/${commentId}`, {
+    method: 'DELETE',
+  });
+
 export {
   BASE_URL,
   getPosts,
@@ -83,4 +90,6 @@ export {
   updatePost,
   togglePostPublish,
   deletePost,
+  getCommentsByPostId,
+  deleteCommentById,
 };

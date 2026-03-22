@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { deletePost, getAdminPosts, togglePostPublish } from '../api';
+import {
+  deleteCommentById,
+  deletePost,
+  getAdminPosts,
+  getCommentsByPostId,
+  togglePostPublish,
+} from '../api';
 
 function Dashboard() {
   const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
+  const [commentsByPost, setCommentsByPost] = useState({});
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -13,7 +20,21 @@ function Dashboard() {
       try {
         setLoading(true);
         const data = await getAdminPosts();
-        setPosts(data.posts || []);
+        const loadedPosts = data.posts || [];
+        setPosts(loadedPosts);
+
+        const commentEntries = await Promise.all(
+          loadedPosts.map(async (post) => {
+            try {
+              const commentData = await getCommentsByPostId(post.id);
+              return [post.id, commentData.comments || []];
+            } catch (error) {
+              return [post.id, []];
+            }
+          })
+        );
+
+        setCommentsByPost(Object.fromEntries(commentEntries));
       } catch (error) {
         setMessage('Could not load posts.');
       } finally {
@@ -53,8 +74,30 @@ function Dashboard() {
       setMessage('');
       await deletePost(postId);
       setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
+      setCommentsByPost((prevComments) => {
+        const nextComments = { ...prevComments };
+        delete nextComments[postId];
+        return nextComments;
+      });
     } catch (error) {
       setMessage('Could not delete draft post.');
+    }
+  };
+
+  const handleEditPost = (postId) => {
+    navigate(`/edit/${postId}`);
+  };
+
+  const handleDeleteComment = async (postId, commentId) => {
+    try {
+      setMessage('');
+      await deleteCommentById(commentId);
+      setCommentsByPost((prevComments) => ({
+        ...prevComments,
+        [postId]: (prevComments[postId] || []).filter((comment) => comment.id !== commentId),
+      }));
+    } catch (error) {
+      setMessage('Could not delete comment.');
     }
   };
 
@@ -78,6 +121,9 @@ function Dashboard() {
               <article key={post.id}>
                 <h3>{post.title}</h3>
                 <p>Status: {post.published ? 'Published' : 'Draft'}</p>
+                <button type="button" onClick={() => handleEditPost(post.id)}>
+                  Edit
+                </button>
                 <button type="button" onClick={() => handleTogglePublish(post.id)}>
                   {post.published ? 'Unpublish' : 'Publish'}
                 </button>
@@ -86,6 +132,27 @@ function Dashboard() {
                     Delete
                   </button>
                 ) : null}
+
+                <section>
+                  <h4>Comments</h4>
+                  {(commentsByPost[post.id] || []).length === 0 ? <p>No comments.</p> : null}
+                  {(commentsByPost[post.id] || []).length > 0 ? (
+                    <ul>
+                      {(commentsByPost[post.id] || []).map((comment) => (
+                        <li key={comment.id}>
+                          <p>{comment.content}</p>
+                          <p>By: {comment.authorName || 'Anonymous'}</p>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteComment(post.id, comment.id)}
+                          >
+                            Delete
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </section>
               </article>
             ))
           : null}
