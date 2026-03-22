@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getAdminPosts, togglePostPublish } from '../api';
+import { deletePost, getAdminPosts, togglePostPublish } from '../api';
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -43,6 +43,21 @@ function Dashboard() {
     }
   };
 
+  const handleDeleteDraft = async (postId) => {
+    const confirmed = window.confirm('Are you sure you want to delete this draft?');
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setMessage('');
+      await deletePost(postId);
+      setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
+    } catch (error) {
+      setMessage('Could not delete draft post.');
+    }
+  };
+
   return (
     <main>
       <h1>Dashboard</h1>
@@ -66,6 +81,11 @@ function Dashboard() {
                 <button type="button" onClick={() => handleTogglePublish(post.id)}>
                   {post.published ? 'Unpublish' : 'Publish'}
                 </button>
+                {!post.published ? (
+                  <button type="button" onClick={() => handleDeleteDraft(post.id)}>
+                    Delete
+                  </button>
+                ) : null}
               </article>
             ))
           : null}

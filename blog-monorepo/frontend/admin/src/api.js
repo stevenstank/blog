@@ -68,6 +68,11 @@ const togglePostPublish = (id) =>
     method: 'PATCH',
   });
 
+const deletePost = (id) =>
+  request(`/posts/${id}`, {
+    method: 'DELETE',
+  });
+
 export {
   BASE_URL,
   getPosts,
@@ -77,4 +82,5 @@ export {
   createPost,
   updatePost,
   togglePostPublish,
+  deletePost,
 };
