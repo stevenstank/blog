@@ -55,8 +55,10 @@ function Post() {
 
   return (
     <main>
-      <h1>{post.title}</h1>
-      <p>{post.content}</p>
+      <article className="post-card">
+        <h1>{post.title}</h1>
+        <p>{post.content}</p>
+      </article>
       <Link to="/">Back to Home</Link>
     </main>
   );

@@ -6,10 +6,12 @@ function PostList({ posts }) {
   }
 
   return (
-    <ul>
+    <ul className="post-list">
       {posts.map((post) => (
-        <li key={post.id}>
-          <Link to={'/post/' + post.id}>{post.title}</Link>
+        <li key={post.id} className="post-card">
+          <h2>
+            <Link to={'/post/' + post.id}>{post.title}</Link>
+          </h2>
         </li>
       ))}
     </ul>
