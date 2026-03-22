@@ -18,14 +18,15 @@ const validateCommentPayload = (req, res, next) => {
     return res.status(400).json({ message: 'Content is required' });
   }
 
-  if (authorName !== undefined && (typeof authorName !== 'string' || authorName.trim().length === 0)) {
-    return res.status(400).json({ message: 'authorName must be a non-empty string when provided' });
-  }
-
   req.body.content = content.trim();
 
-  if (authorName !== undefined) {
-    req.body.authorName = authorName.trim();
+  if (authorName !== undefined && typeof authorName !== 'string') {
+    return res.status(400).json({ message: 'authorName must be a string when provided' });
+  }
+
+  if (typeof authorName === 'string') {
+    const trimmedAuthorName = authorName.trim();
+    req.body.authorName = trimmedAuthorName.length > 0 ? trimmedAuthorName : undefined;
   }
 
   return next();
