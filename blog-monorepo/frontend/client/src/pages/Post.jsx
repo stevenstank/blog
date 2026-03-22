@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-
-const API_BASE_URL = 'http://localhost:5000';
+import { BASE_URL } from '../api';
 
 function Post() {
   const { id } = useParams();
@@ -22,8 +21,8 @@ function Post() {
         setCommentsLoading(true);
 
         const [postResponse, commentsResponse] = await Promise.all([
-          fetch(API_BASE_URL + '/posts/' + id),
-          fetch(API_BASE_URL + '/posts/' + id + '/comments'),
+          fetch(BASE_URL + '/posts/' + id),
+          fetch(BASE_URL + '/posts/' + id + '/comments'),
         ]);
 
         if (!postResponse.ok) {
@@ -62,7 +61,7 @@ function Post() {
       setSubmitting(true);
       setMessage('');
 
-      const response = await fetch(`${API_BASE_URL}/posts/${id}/comments`, {
+      const response = await fetch(`${BASE_URL}/posts/${id}/comments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

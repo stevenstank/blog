@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-
-const API_BASE_URL = 'http://localhost:5000';
+import { login } from '../api';
 
 function Login() {
   const navigate = useNavigate();
@@ -27,19 +26,7 @@ function Login() {
       setLoading(true);
       setError('');
 
-      const response = await fetch(API_BASE_URL + '/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Invalid credentials');
-      }
-
-      const data = await response.json();
+      const data = await login({ email, password });
       localStorage.setItem('token', data.token);
       navigate('/dashboard');
     } catch (err) {

@@ -1,6 +1,5 @@
 import { useState } from 'react';
-
-const API_BASE_URL = 'http://localhost:5000';
+import { createPost } from '../api';
 
 function NewPost() {
   const [title, setTitle] = useState('');
@@ -12,20 +11,7 @@ function NewPost() {
 
     try {
       setMessage('');
-      const token = localStorage.getItem('token');
-
-      const response = await fetch(API_BASE_URL + '/posts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + token,
-        },
-        body: JSON.stringify({ title, content }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create post');
-      }
+      await createPost({ title, content });
 
       setTitle('');
       setContent('');
