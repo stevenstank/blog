@@ -6,6 +6,8 @@ const API_BASE_URL = 'http://localhost:5000';
 function Post() {
   const { id } = useParams();
   const [post, setPost] = useState(null);
+  const [comments, setComments] = useState([]);
+  const [commentsLoading, setCommentsLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [authorName, setAuthorName] = useState('');
@@ -14,25 +16,38 @@ function Post() {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    const fetchPost = async () => {
+    const fetchPostAndComments = async () => {
       try {
         setLoading(true);
-        const response = await fetch(API_BASE_URL + '/posts/' + id);
+        setCommentsLoading(true);
 
-        if (!response.ok) {
+        const [postResponse, commentsResponse] = await Promise.all([
+          fetch(API_BASE_URL + '/posts/' + id),
+          fetch(API_BASE_URL + '/posts/' + id + '/comments'),
+        ]);
+
+        if (!postResponse.ok) {
           throw new Error('Failed to fetch post');
         }
 
-        const data = await response.json();
-        setPost(data.post || null);
+        const postData = await postResponse.json();
+        setPost(postData.post || null);
+
+        if (commentsResponse.ok) {
+          const commentData = await commentsResponse.json();
+          setComments(commentData.comments || []);
+        } else {
+          setComments([]);
+        }
       } catch (err) {
         setError('Could not load post.');
       } finally {
         setLoading(false);
+        setCommentsLoading(false);
       }
     };
 
-    fetchPost();
+    fetchPostAndComments();
   }, [id]);
 
   const handleSubmitComment = async (event) => {
@@ -60,6 +75,12 @@ function Post() {
 
       if (!response.ok) {
         throw new Error('Failed to submit comment');
+      }
+
+      const data = await response.json();
+      const createdComment = data.comment;
+      if (createdComment) {
+        setComments((prevComments) => [createdComment, ...prevComments]);
       }
 
       setAuthorName('');
@@ -128,6 +149,24 @@ function Post() {
           </button>
         </form>
         {message ? <p>{message}</p> : null}
+      </section>
+
+      <section className="post-card">
+        <h2>Comments</h2>
+        {commentsLoading ? <p>Loading comments...</p> : null}
+        {!commentsLoading && comments.length === 0 ? <p>No comments yet.</p> : null}
+        {!commentsLoading && comments.length > 0 ? (
+          <ul>
+            {comments.map((comment) => (
+              <li key={comment.id}>
+                <p>
+                  <strong>{comment.authorName || 'Anonymous'}</strong>
+                </p>
+                <p>{comment.content}</p>
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </section>
 
       <Link to="/">Back to Home</Link>
