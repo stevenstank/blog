@@ -45,6 +45,8 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    console.log('[auth/login] Incoming credentials:', { email, password });
+
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
     }
@@ -53,11 +55,24 @@ const login = async (req, res) => {
       where: { email },
     });
 
+    console.log('[auth/login] Fetched user:',
+      user
+        ? {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            passwordPrefix: String(user.password || '').slice(0, 4),
+          }
+        : null
+    );
+
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    console.log('[auth/login] Password comparison result:', isPasswordValid);
 
     if (!isPasswordValid) {
       return res.status(401).json({ message: 'Invalid credentials' });
