@@ -1,6 +1,7 @@
 const express = require('express');
 const {
   getPublishedPosts,
+  getAllPosts,
   getPublishedPostById,
   createPost,
   updatePost,
@@ -14,6 +15,7 @@ const { parsePostId, validatePostPayload } = require('../middleware/postValidati
 const router = express.Router();
 
 router.get('/', getPublishedPosts);
+router.get('/admin', verifyToken, requireAdmin, getAllPosts);
 router.get('/:id', parsePostId, getPublishedPostById);
 
 router.post('/', verifyToken, requireAdmin, validatePostPayload, createPost);

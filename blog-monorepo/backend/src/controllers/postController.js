@@ -13,6 +13,18 @@ const getPublishedPosts = async (req, res) => {
   }
 };
 
+const getAllPosts = async (req, res) => {
+  try {
+    const posts = await prisma.post.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return res.status(200).json({ posts });
+  } catch (error) {
+    return res.status(500).json({ message: 'Failed to fetch posts' });
+  }
+};
+
 const getPublishedPostById = async (req, res) => {
   try {
     const post = await prisma.post.findFirst({
@@ -106,7 +118,7 @@ const publishPost = async (req, res) => {
   try {
     const existingPost = await prisma.post.findUnique({
       where: { id: req.postId },
-      select: { id: true },
+      select: { id: true, published: true },
     });
 
     if (!existingPost) {
@@ -115,7 +127,7 @@ const publishPost = async (req, res) => {
 
     const post = await prisma.post.update({
       where: { id: req.postId },
-      data: { published: true },
+      data: { published: !existingPost.published },
     });
 
     return res.status(200).json({ post });
@@ -126,6 +138,7 @@ const publishPost = async (req, res) => {
 
 module.exports = {
   getPublishedPosts,
+  getAllPosts,
   getPublishedPostById,
   createPost,
   updatePost,

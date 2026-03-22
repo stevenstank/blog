@@ -41,6 +41,8 @@ const request = async (path, options = {}) => {
 
 const getPosts = () => request('/posts');
 
+const getAdminPosts = () => request('/posts/admin');
+
 const getPostById = (id) => request(`/posts/${id}`);
 
 const login = ({ email, password }) =>
@@ -61,4 +63,18 @@ const updatePost = (id, { title, content }) =>
     body: JSON.stringify({ title, content }),
   });
 
-export { BASE_URL, getPosts, getPostById, login, createPost, updatePost };
+const togglePostPublish = (id) =>
+  request(`/posts/${id}/publish`, {
+    method: 'PATCH',
+  });
+
+export {
+  BASE_URL,
+  getPosts,
+  getAdminPosts,
+  getPostById,
+  login,
+  createPost,
+  updatePost,
+  togglePostPublish,
+};
